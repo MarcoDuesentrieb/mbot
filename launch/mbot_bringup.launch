@@ -1,0 +1,6 @@
+<launch>
+
+  <!-- 3D scan publisher -->
+  <node pkg="mbot_bringup" type="main" name="mbot_bringup" output="screen"/>
+
+</launch>
