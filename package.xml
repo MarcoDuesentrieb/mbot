@@ -1,0 +1,20 @@
+<package>
+  <name>mbot_msgs</name>
+  <version>0.0.1</version>
+  <description>
+    <p>
+      Carecules custom message and service types.
+    </p> 
+  </description>
+  <author email="m.dittmann@varomo.de">Marco Dittmann</author>
+  <maintainer email="m.dittmann@varomo.de">Marco Dittmann</maintainer>
+  <license>BSD</license>
+  
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>std_msgs</build_depend>
+  <build_depend>message_generation</build_depend>
+
+  <run_depend>std_msgs</run_depend>
+  <run_depend>message_generation</run_depend>
+</package>
