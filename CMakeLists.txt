@@ -8,11 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # set(EXECUTABLE_OUTPUT_PATH ../files)
 find_package(Threads REQUIRED)
 find_package(simpleble REQUIRED CONFIG)
-find_package(catkin REQUIRED COMPONENTS
-        roscpp
-        roslib
-        std_msgs
-        )
+find_package(catkin REQUIRED COMPONENTS roscpp roslib std_msgs mbot_msgs)
 
 
 ###################################

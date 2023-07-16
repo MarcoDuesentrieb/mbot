@@ -5,6 +5,7 @@
 #include <simpleble/SimpleBLE.h>
 #include <cstring>
 
+
 /* ROS includes */
 #include <ros/ros.h>
 #include <std_msgs/Float32.h>
@@ -21,25 +22,6 @@ void reverseBytes(std::string &s)
         s[i] = copy[len-1-i];
 }
 
-float hexStringToFloat(const std::string& hexString) {
-
-    std::stringstream ss;
-
-    for(auto c : hexString)
-        ss << std::hex << (int)c;
-
-    // Convert the stripped string to an integer
-    //std::stringstream ss;
-    //ss << std::hex << hexString;
-    unsigned int intValue;
-    ss >> intValue;
-
-    // Interpret the integer as a float
-    float floatValue;
-    std::memcpy(&floatValue, &intValue, sizeof(float));
-
-    return floatValue;
-}
 
 
 int main(int argc, char** argv)
@@ -52,7 +34,9 @@ int main(int argc, char** argv)
     // Read peripheral_address parameter
     std::string peripheral_address;
     nh.param<std::string>("peripheral_address", peripheral_address, "");
+    std::vector<std::pair<SimpleBLE::BluetoothUUID, SimpleBLE::BluetoothUUID>> uuids;
     SimpleBLE::Peripheral arduino;
+    bool connected = false;
 
     // ROS publishers
     ros::Publisher emg01_pub = nh.advertise<std_msgs::Float32>("/mbot/emg01", 10);
@@ -95,9 +79,10 @@ int main(int argc, char** argv)
     //  ### Adapter CALLBACK DEFINITIONS ###
 
     // Set the callback to be called when the scan starts
-    adapter.set_callback_on_scan_start([]()
+    adapter.set_callback_on_scan_start([&peripheral_address]()
     {
-        std::cout << "Scanning for peripherals... " << std::endl;
+        ROS_INFO_STREAM("Scanning for peripherals... ");
+        ROS_INFO_STREAM("Searching for: " << peripheral_address);
     });
 
     // Set the callback to be called when the scan stops
@@ -119,22 +104,42 @@ int main(int argc, char** argv)
         }
     });
 
-
     //  ### START ###
 
     // Start scanning for peripherals
-    adapter.scan_start();
+    std::vector<SimpleBLE::Peripheral> periphs = adapter.scan_get_results();
+    bool periph_found = false;
+    for(auto& p: periphs)
+    {
+        if(p.address() == peripheral_address)
+        {
+            ROS_INFO("Desired peripheral is already there.");
+            periph_found = true;
+            arduino = p;
+            if(arduino.is_connected())
+            {
+
+            }
+            else
+            {
+                arduino.connect()
+            }
+        }
+    }
+
+    if(!periph_found) adapter.scan_start();
+
 
     // Get the list of peripherals found
     // std::vector<SimpleBLE::Peripheral> peripherals = adapter.scan_get_results();
 
-    while(!arduino.initialized()) std::this_thread::sleep_for(std::chrono::milliseconds (100));
-    arduino.set_callback_on_connected([&arduino, &emg01]()
+    while(!arduino.initialized()) std::this_thread::sleep_for(std::chrono::milliseconds (1));
+    arduino.set_callback_on_connected([&arduino, &emg01, &connected, &uuids]()
     {
-
+        connected = true;
         std::cout << "connected!\n\n";
         // Store all service and characteristic uuids in a vector.
-        std::vector<std::pair<SimpleBLE::BluetoothUUID, SimpleBLE::BluetoothUUID>> uuids;
+
         for (auto service: arduino.services())
         {
           for (auto characteristic: service.characteristics())
@@ -147,23 +152,16 @@ int main(int argc, char** argv)
         for (size_t i = 0; i < uuids.size(); i++)
             std::cout << "[" << i << "] " << uuids[i].first << " " << uuids[i].second << "\n";
 
-            SimpleBLE::ByteArray rx_data = arduino.read(uuids[1].first, uuids[1].second);
 
-            // the Arduino Nano 33 IOT uses big endian, so we have to reverse the bytes
-            reverseBytes(rx_data);
-
-            std::stringstream ss;
-            for(auto c : rx_data) ss << std::hex << (int)c;
-
-            float rx_data_f = hexStringToFloat(rx_data);
-            std::cout << "\nCharacteristic content is: 0x";
-            std:: cout << ss.str() << std::endl;
-            std:: cout << "Float: " << rx_data_f << std::endl;
-
-            emg01.data = rx_data_f;
-
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            //std::this_thread::sleep_for(std::chrono::milliseconds(100));
     });
+
+    arduino.set_callback_on_disconnected([&connected]()
+    {
+        connected = false;
+        ROS_WARN_STREAM("Peripheral disconnected.");
+    });
+
 
     // Establish a connection to the Arduino device
     std::cout << "Connecting to Arduino ... ";
@@ -172,13 +170,50 @@ int main(int argc, char** argv)
 
     while (ros::ok())
     {
-        emg01_pub.publish(emg01);
+        if(connected)
+        {
+            std::stringstream ss;
+            try{
+                SimpleBLE::ByteArray rx_data = arduino.read(uuids[1].first, uuids[1].second);
+                float f1, f2;
+                size_t n_bytes = rx_data.length();
+                uint8_t rx_int[n_bytes];
+                for(size_t i = 0; i < n_bytes; ++i)
+                    rx_int[i] =  (uint8_t)rx_data[i];
+
+                memcpy(&f1, &rx_int[0], 4);
+                memcpy(&f2, &rx_int[4], 4);
+
+
+                emg01.data = f1;
+                emg01_pub.publish(emg01);
+
+                emg02.data = f2;
+                emg02_pub.publish(emg02);
+            }
+            catch(std::out_of_range)
+            {
+                ROS_WARN("Peripheral disconnected");
+                continue;
+            }
+
+        }
+        else
+        {
+            adapter.scan_start();
+        }
+
         // motor_pub.publish(motor);
         ros::spinOnce();
         loop_rate.sleep();
     }
-    //while(!arduino.is_connected()) std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
+    // Cleanup
+    ROS_INFO("Disconnecting peripheral ...");
+    arduino.disconnect();
+    while (arduino.is_connected())
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    ROS_INFO("Peripheral disconnected.");
 
     return 0;
 }
