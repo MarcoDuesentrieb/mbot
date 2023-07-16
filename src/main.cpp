@@ -118,7 +118,7 @@ int main(int argc, char** argv)
     // std::vector<SimpleBLE::Peripheral> peripherals = adapter.scan_get_results();
 
     while(!arduino.initialized()) std::this_thread::sleep_for(std::chrono::milliseconds (1000));
-    arduino.set_callback_on_connected([&arduino, &emg01, &connected, &uuids]()
+    arduino.set_callback_on_connected([&]()
     {
         connected = true;
         std::cout << "connected!\n\n";
@@ -138,7 +138,27 @@ int main(int argc, char** argv)
 
 
             //std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        // Subscribe to the characteristic.
+        arduino.notify(uuids[1].first, uuids[1].second, [&](SimpleBLE::ByteArray rx_data) {
+            float f1, f2;
+            size_t n_bytes = rx_data.length();
+            uint8_t rx_int[n_bytes];
+            for(size_t i = 0; i < n_bytes; ++i)
+                rx_int[i] =  (uint8_t)rx_data[i];
+
+            memcpy(&f1, &rx_int[0], 4);
+            memcpy(&f2, &rx_int[4], 4);
+
+
+            emg01.data = f1;
+            emg01_pub.publish(emg01);
+
+            emg02.data = f2;
+            emg02_pub.publish(emg02);
+        });
     });
+
+
 
     arduino.set_callback_on_disconnected([&connected, &uuids]()
     {
@@ -157,32 +177,8 @@ int main(int argc, char** argv)
     {
         if(connected)
         {
-            std::stringstream ss;
-            try{
-                SimpleBLE::ByteArray rx_data = arduino.read(uuids[1].first, uuids[1].second);
-                float f1, f2;
-                size_t n_bytes = rx_data.length();
-                uint8_t rx_int[n_bytes];
-                for(size_t i = 0; i < n_bytes; ++i)
-                    rx_int[i] =  (uint8_t)rx_data[i];
-
-                memcpy(&f1, &rx_int[0], 4);
-                memcpy(&f2, &rx_int[4], 4);
 
 
-                emg01.data = f1;
-                emg01_pub.publish(emg01);
-
-                emg02.data = f2;
-                emg02_pub.publish(emg02);
-            }
-            catch(const std::exception& e)
-            {
-                ROS_WARN_ONCE("Peripheral disconnected");
-                connected = false;
-                found = false;
-                continue;
-            }
 
         }
         else if(!adapter.scan_is_active() && !found)
