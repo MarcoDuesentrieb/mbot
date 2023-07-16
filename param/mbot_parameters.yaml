@@ -1,2 +1,6 @@
 rate: 25
 peripheral_address: "78:21:84:7B:35:AA"
+v_emg01_min: 0.0
+v_emg01_max: 2.0
+v_emg02_min: 0.0
+v_emg02_max: 2.0

@@ -41,9 +41,11 @@ include_directories(
 
 
 add_executable(main src/main.cpp)
+add_executable(mbot_controller src/mbot_controller.cpp)
 
 
-target_link_libraries(main stdc++fs Threads::Threads simpleble::simpleble ${catkin_LIBRARIES})
+target_link_libraries(main Threads::Threads simpleble::simpleble ${catkin_LIBRARIES})
+target_link_libraries(mbot_controller Threads::Threads ${catkin_LIBRARIES})
 
 # add_executable(find_reference_needle src/find_reference_needle.cpp)
 # target_link_libraries(find_reference_needle ${catkin_LIBRARIES} ${PCL_LIBRARIES})
@@ -60,6 +62,7 @@ target_link_libraries(main stdc++fs Threads::Threads simpleble::simpleble ${catk
 ################################################################################
 
 install(TARGETS main RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+install(TARGETS mbot_controller RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)

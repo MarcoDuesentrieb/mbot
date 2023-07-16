@@ -9,6 +9,7 @@
 /* ROS includes */
 #include <ros/ros.h>
 #include <std_msgs/Float32.h>
+#include <mbot_msgs/EMG.h>
 #include <mbot_msgs/Motor.h>
 
 
@@ -40,13 +41,11 @@ int main(int argc, char** argv)
     bool found = false;
 
     // ROS publishers
-    ros::Publisher emg01_pub = nh.advertise<std_msgs::Float32>("/mbot/emg01", 10);
-    ros::Publisher emg02_pub = nh.advertise<std_msgs::Float32>("/mbot/emg02", 10);
+    ros::Publisher emg_pub = nh.advertise<mbot_msgs::EMG>("/mbot/emg", 10);
     ros::Publisher motor_pub = nh.advertise<mbot_msgs::Motor>("/mbot/motor", 10);
 
     // ROS messages
-    std_msgs::Float32 emg01;
-    std_msgs::Float32 emg02;
+    mbot_msgs::EMG emg;
     mbot_msgs::Motor motor;
 
     // Read rate parameter
@@ -150,11 +149,10 @@ int main(int argc, char** argv)
             memcpy(&f2, &rx_int[4], 4);
 
 
-            emg01.data = f1;
-            emg01_pub.publish(emg01);
-
-            emg02.data = f2;
-            emg02_pub.publish(emg02);
+            // publish EMG data
+            emg.ch1 = f1;
+            emg.ch2 = f2;
+            emg_pub.publish(emg);
         });
     });
 
