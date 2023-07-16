@@ -37,6 +37,7 @@ int main(int argc, char** argv)
     std::vector<std::pair<SimpleBLE::BluetoothUUID, SimpleBLE::BluetoothUUID>> uuids;
     SimpleBLE::Peripheral arduino;
     bool connected = false;
+    bool found = false;
 
     // ROS publishers
     ros::Publisher emg01_pub = nh.advertise<std_msgs::Float32>("/mbot/emg01", 10);
@@ -92,48 +93,31 @@ int main(int argc, char** argv)
     });
 
     // Set the callback to be called when the scan finds a new peripheral
-    adapter.set_callback_on_scan_found([&adapter, &arduino, &peripheral_address](SimpleBLE::Peripheral peripheral)
+    adapter.set_callback_on_scan_found([&adapter, &arduino, &peripheral_address, &found](SimpleBLE::Peripheral peripheral)
     {
-        // std::cout << "Peripheral found: " << peripheral.identifier() << std::endl;
-        // std::cout << "Peripheral address: " << peripheral.address() << std::endl;
+//        std::cout << "Peripheral found: " << peripheral.identifier() << std::endl;
+//        std::cout << "Peripheral address: " << peripheral.address() << std::endl;
+//        ROS_INFO_STREAM("Found peripheral: " << peripheral.address());
         if(peripheral.address() == peripheral_address)
         {
             std::cout << "YES we found the desired peripheral!\n";
             adapter.scan_stop();
             arduino = peripheral;
+            found = true;
         }
     });
 
     //  ### START ###
 
     // Start scanning for peripherals
-    std::vector<SimpleBLE::Peripheral> periphs = adapter.scan_get_results();
-    bool periph_found = false;
-    for(auto& p: periphs)
-    {
-        if(p.address() == peripheral_address)
-        {
-            ROS_INFO("Desired peripheral is already there.");
-            periph_found = true;
-            arduino = p;
-            if(arduino.is_connected())
-            {
-
-            }
-            else
-            {
-                arduino.connect()
-            }
-        }
-    }
-
-    if(!periph_found) adapter.scan_start();
+    auto start = std::chrono::system_clock::now();
+    adapter.scan_start();
 
 
     // Get the list of peripherals found
     // std::vector<SimpleBLE::Peripheral> peripherals = adapter.scan_get_results();
 
-    while(!arduino.initialized()) std::this_thread::sleep_for(std::chrono::milliseconds (1));
+    while(!arduino.initialized()) std::this_thread::sleep_for(std::chrono::milliseconds (1000));
     arduino.set_callback_on_connected([&arduino, &emg01, &connected, &uuids]()
     {
         connected = true;
@@ -156,9 +140,10 @@ int main(int argc, char** argv)
             //std::this_thread::sleep_for(std::chrono::milliseconds(100));
     });
 
-    arduino.set_callback_on_disconnected([&connected]()
+    arduino.set_callback_on_disconnected([&connected, &uuids]()
     {
         connected = false;
+        uuids.clear();
         ROS_WARN_STREAM("Peripheral disconnected.");
     });
 
@@ -191,16 +176,27 @@ int main(int argc, char** argv)
                 emg02.data = f2;
                 emg02_pub.publish(emg02);
             }
-            catch(std::out_of_range)
+            catch(const std::exception& e)
             {
-                ROS_WARN("Peripheral disconnected");
+                ROS_WARN_ONCE("Peripheral disconnected");
+                connected = false;
+                found = false;
                 continue;
             }
 
         }
-        else
+        else if(!adapter.scan_is_active() && !found)
         {
+            ROS_INFO_ONCE("Trying to connect again ...");
             adapter.scan_start();
+        }
+        else if(found)
+        {
+            arduino.connect();
+            while(!arduino.is_connected())
+            {
+                loop_rate.sleep();
+            }
         }
 
         // motor_pub.publish(motor);
