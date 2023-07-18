@@ -27,7 +27,6 @@ void reverseBytes(std::string &s)
 
 int main(int argc, char** argv)
 {
-
     //  ### INITIALISATION ###
     ros::init(argc, argv, "mbot_bringup_node");
     ros::NodeHandle nh;
@@ -55,14 +54,14 @@ int main(int argc, char** argv)
 
     // Check if the systems bluetooth adapter is enabled
     if (!SimpleBLE::Adapter::bluetooth_enabled()) {
-        std::cout << "Bluetooth is not enabled" << std::endl;
+        ROS_ERROR("Bluetooth is not enabled");
         return 1;
     }
 
     // Get a list of all available adapters
     auto adapters = SimpleBLE::Adapter::get_adapters();
     if (adapters.empty()) {
-        std::cout << "No Bluetooth adapters found" << std::endl;
+        ROS_ERROR("No Bluetooth adapters found");
         return 1;
     }
 
@@ -70,10 +69,8 @@ int main(int argc, char** argv)
     auto adapter = adapters[0];
 
     // Print adapter info
-    std::cout << "Adapter identifier: " << adapter.identifier() << "\n";
-    std::cout << "Adapter address: " << adapter.address() << "\n\n";
-
-
+    ROS_INFO_STREAM("Adapter identifier: " << adapter.identifier());
+    ROS_INFO_STREAM("Adapter address: " << adapter.address());
 
 
     //  ### Adapter CALLBACK DEFINITIONS ###
@@ -88,7 +85,7 @@ int main(int argc, char** argv)
     // Set the callback to be called when the scan stops
     adapter.set_callback_on_scan_stop([]()
     {
-        std::cout << "Scan stopped" << std::endl;
+        ROS_INFO("Scan stopped");
     });
 
     // Set the callback to be called when the scan finds a new peripheral
@@ -99,7 +96,7 @@ int main(int argc, char** argv)
 //        ROS_INFO_STREAM("Found peripheral: " << peripheral.address());
         if(peripheral.address() == peripheral_address)
         {
-            std::cout << "YES we found the desired peripheral!\n";
+            ROS_INFO("Desired peripheral found!");
             adapter.scan_stop();
             arduino = peripheral;
             found = true;
@@ -131,14 +128,14 @@ int main(int argc, char** argv)
           }
         }
 
-        std::cout << "The following services and characteristics were found:" << std::endl;
+        ROS_INFO("The following services and characteristics were found:");
         for (size_t i = 0; i < uuids.size(); i++)
-            std::cout << "[" << i << "] " << uuids[i].first << " " << uuids[i].second << "\n";
+            ROS_INFO_STREAM("[" << i << "] " << uuids[i].first << " " << uuids[i].second);
 
 
-            //std::this_thread::sleep_for(std::chrono::milliseconds(100));
         // Subscribe to the characteristic.
-        arduino.notify(uuids[1].first, uuids[1].second, [&](SimpleBLE::ByteArray rx_data) {
+        arduino.notify(uuids[1].first, uuids[1].second, [&](SimpleBLE::ByteArray rx_data)
+        {
             float f1, f2;
             size_t n_bytes = rx_data.length();
             uint8_t rx_int[n_bytes];
@@ -147,7 +144,6 @@ int main(int argc, char** argv)
 
             memcpy(&f1, &rx_int[0], 4);
             memcpy(&f2, &rx_int[4], 4);
-
 
             // publish EMG data
             emg.ch1 = f1;
