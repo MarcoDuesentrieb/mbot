@@ -94,6 +94,12 @@ int main(int argc, char** argv)
 
         if((ros::Time::now() - last_emg_update).toSec() < emg_timeout)
         {
+            // TODO: Solve this with dynamic reconfigure!
+            nh.param<float>("v_emg01_min", emg01_min, 0.0);
+            nh.param<float>("v_emg01_max", emg01_max, 3.3);
+            nh.param<float>("v_emg02_min", emg02_min, 0.0);
+            nh.param<float>("v_emg02_max", emg02_max, 3.3);
+
             // help a little bit
             if(boost && emg01 > emg01_min + (emg01_max - emg01_min) / 2.0) emg01 *= 1.2; 
             
