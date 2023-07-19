@@ -1,8 +1,12 @@
 rate: 25
 peripheral_address: "78:21:84:7B:35:AA"
-ultrasonic_safety_distance: 0.18
+ultrasonic_safety_distance: 0.19
+motor_throttle_left: 0.061
+motor_throttle_right: 0.00
+motor_throttle_all: 0.00
+boost_upper_interval: false 
 emg_timeout: 0.1
-v_emg01_min: 0.0
-v_emg01_max: 2.0
+v_emg01_min: 0.40
+v_emg01_max: 1.10
 v_emg02_min: 0.0
 v_emg02_max: 2.0

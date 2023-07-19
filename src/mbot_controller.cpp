@@ -16,9 +16,6 @@ float emg02 = 0;
 float ultrasonic_distance = 0.0;
 ros::Time last_emg_update;
 
-float constrain(float x, float min, float max) {
-    return x < min ? min : x > max ? max : x; 
-}
 
 float map(float x, float in_min, float in_max, float out_min, float out_max) {
     if(in_max == in_min) return (out_min + out_max) / 2.0;
@@ -57,6 +54,19 @@ int main(int argc, char** argv)
     // ROS messages
     mbot_msgs::Motor motor;
 
+    // boost the upper voltage interval to make control easier
+    bool boost;
+    nh.param<bool>("boost_upper_interval", boost, false);
+
+    // get throttle factors to compensate for unequal motor impedances
+    double throttle_left, throttle_right, throttle_all;
+    nh.param<double>("motor_throttle_left", throttle_left, 0.0);
+    nh.param<double>("motor_throttle_right", throttle_right, 0.0);
+    nh.param<double>("motor_throttle_all", throttle_all, 0.0);
+    throttle_left = std::min(std::max(throttle_left, 0.0), 1.0);
+    throttle_right = std::min(std::max(throttle_right, 0.0), 1.0);
+    throttle_all = std::min(std::max(throttle_all, 0.0), 1.0);
+
     // avoid collision with the help of ultrasound
     float ultrasonic_safety_distance;
     nh.param<float>("ultrasonic_safety_distance", ultrasonic_safety_distance, 0.10);
@@ -84,20 +94,26 @@ int main(int argc, char** argv)
 
         if((ros::Time::now() - last_emg_update).toSec() < emg_timeout)
         {
+            // help a little bit
+            if(boost && emg01 > emg01_min + (emg01_max - emg01_min) / 2.0) emg01 *= 1.2; 
+            
             // generate motor command
-            constrain(emg01, emg01_min, emg01_max);
-            constrain(emg02, emg02_min, emg02_max);
+            emg01 = std::min(std::max(emg01, emg01_min), emg01_max);
+            emg02 = std::min(std::max(emg02, emg02_min), emg02_max);
             float t = map(emg01, emg01_min, emg01_max, -1.0, 1.0);
             float r = map(emg02, emg02_min, emg02_max, -1.0, 1.0);
 
             // Calculate left and right motor speeds based on translational and rotational speed
             int ml = (t - r) * 255;
             int mr = (t + r) * 255;
-            int cmd_l = std::min(std::max(ml, -255), 255);
-            int cmd_r = std::min(std::max(mr, -255), 255);
+            float thl = (1.0 - throttle_left) * (1.0 - throttle_all); // combined throttle left
+            float thr = (1.0 - throttle_right) * (1.0 -  throttle_all); // combined throttle right
+            int cmd_l = static_cast<int>(round(std::min(std::max(ml, -255), 255) * thl));
+            int cmd_r = static_cast<int>(round(std::min(std::max(mr, -255), 255) * thr));
 
             if(ultrasonic_distance < ultrasonic_safety_distance)
             {
+                // only allow moving backwards since there is an obstacle in front of the robot
                 if(cmd_l > 0 || cmd_r > 0)
                 {
                     cmd_l = 0;
@@ -114,7 +130,6 @@ int main(int argc, char** argv)
             motor.left = 0;
             motor.right = 0;
         }
-
 
         motor_pub.publish(motor);
         ros::spinOnce();
