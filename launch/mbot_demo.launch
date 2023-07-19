@@ -7,10 +7,7 @@
     <include file="$(find mbot_bringup)/launch/mbot_rosserial.launch"/>
 
     <!-- mbot_controller node -->
-    <param name="v_emg02_min" type="double" value="0.00"/>
-    <param name="v_emg02_max" type="double" value="0.00"/>
-    <param name="motor_throttle_all" type="double" value="0.10"/>
-    <param name="boost_upper_interval" type="bool" value="true"/>
+	<rosparam file="$(find mbot_bringup)/param/demo_parameters.yaml" />
     <node pkg="mbot_bringup" type="mbot_controller" name="mbot_controller" output="screen" />
 
 </launch>

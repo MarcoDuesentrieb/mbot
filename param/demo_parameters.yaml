@@ -1,0 +1,5 @@
+v_emg02_min: 0.00
+v_emg02_max: 0.00
+motor_throttle_all: 0.10
+boost_upper_interval: true
+
