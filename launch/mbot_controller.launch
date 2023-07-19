@@ -1,12 +1,9 @@
 <launch>
-	
-	<!-- Parameter file -->
-	<rosparam file="$(find mbot_bringup)/param/mbot_parameters.yaml" />
-    
-	<!-- Serial node -->
-    <include file="$(find mbot_bringup)/launch/mbot_rosserial.launch"/>
+	 
+	<!-- mBot bringup -->
+    <include file="$(find mbot_bringup)/launch/mbot_bringup.launch"/>
 
-    <!-- mbot_controller node -->
-    <node pkg="mbot_bringup" type="mbot_controller" name="mbot_controller" output="screen" />
+	<!-- mBot controller -->
+    <include file="$(find mbot_bringup)/launch/mbot_controller.launch"/>
 
 </launch>

@@ -16,8 +16,13 @@ float emg02 = 0;
 float ultrasonic_distance = 0.0;
 ros::Time last_emg_update;
 
+float constrain(float x, float min, float max) {
+    return x < min ? min : x > max ? max : x; 
+}
+
 float map(float x, float in_min, float in_max, float out_min, float out_max) {
-    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+    if(in_max == in_min) return (out_min + out_max) / 2.0;
+    else return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
 
@@ -80,6 +85,8 @@ int main(int argc, char** argv)
         if((ros::Time::now() - last_emg_update).toSec() < emg_timeout)
         {
             // generate motor command
+            constrain(emg01, emg01_min, emg01_max);
+            constrain(emg02, emg02_min, emg02_max);
             float t = map(emg01, emg01_min, emg01_max, -1.0, 1.0);
             float r = map(emg02, emg02_min, emg02_max, -1.0, 1.0);
 

@@ -47,14 +47,6 @@ add_executable(mbot_controller src/mbot_controller.cpp)
 target_link_libraries(mbot_bringup Threads::Threads simpleble::simpleble ${catkin_LIBRARIES})
 target_link_libraries(mbot_controller Threads::Threads ${catkin_LIBRARIES})
 
-# add_executable(find_reference_needle src/find_reference_needle.cpp)
-# target_link_libraries(find_reference_needle ${catkin_LIBRARIES} ${PCL_LIBRARIES})
-
-# add_executable(tf_scan_marker src/tf_scan_marker.cpp inc/tf_scan_marker.h)
-# target_link_libraries(tf_scan_marker ${catkin_LIBRARIES})
-# target_link_libraries(tf_scan_marker ${catkin_LIBRARIES} ${PCL_LIBRARIES})
-
-
 
 
 ################################################################################
@@ -71,5 +63,5 @@ install(DIRECTORY param launch
 
 
 #catkin_install_python(PROGRAMS
-#        scripts/stl2pcd.py
+#        
 #        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/scripts)
