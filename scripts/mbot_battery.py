@@ -58,6 +58,7 @@ class Battery:
 
         # Refer to BatteryState message definition: 
         # http://docs.ros.org/en/melodic/api/sensor_msgs/html/msg/BatteryState.html
+        self.battery_state_msg.percentage = readCapacity(bus)/100.0
         self.battery_state_msg.capacity = float('nan') #  Capacity in Ah (last full capacity)  (If unmeasured NaN)
         self.battery_state_msg.design_capacity = 2 * 3.120
         self.battery_state_msg.power_supply_status = self.get_power_supply_status()
