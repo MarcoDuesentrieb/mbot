@@ -1,0 +1,3 @@
+buzzer_alarm: True
+buzzer_interval: 120
+low_bat_threshold: 0.05

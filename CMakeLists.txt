@@ -8,7 +8,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # set(EXECUTABLE_OUTPUT_PATH ../files)
 find_package(Threads REQUIRED)
 find_package(simpleble REQUIRED CONFIG)
-find_package(catkin REQUIRED COMPONENTS roscpp roslib std_msgs mbot_msgs)
+find_package(catkin REQUIRED COMPONENTS
+        roscpp
+        roslib
+        std_msgs
+        sensor_msgs
+        mbot_msgs)
 
 
 ###################################
@@ -23,7 +28,7 @@ find_package(catkin REQUIRED COMPONENTS roscpp roslib std_msgs mbot_msgs)
 catkin_package(
           INCLUDE_DIRS inc
         #  LIBRARIES beginner_tutorials
-          CATKIN_DEPENDS roscpp rospy std_msgs
+          CATKIN_DEPENDS roscpp rospy std_msgs sensor_msgs
         #  DEPENDS system_lib
 )
 
@@ -62,6 +67,6 @@ install(DIRECTORY param launch
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
 
-#catkin_install_python(PROGRAMS
-#        
-#        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/scripts)
+catkin_install_python(PROGRAMS
+        scripts/mbot_battery.py
+        DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
