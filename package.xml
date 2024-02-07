@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>mbot</name>
+  <version>1.0.0</version>
+  <description>mBot metapackage consising of: mbot_msgs, mbot_bringup</description>
+
+  <author email="m.dittmann@varomo.de">Marco Dittmann</author>
+  <maintainer email="m.dittmann@varomo.de">Marco Dittmann</maintainer>
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  
+  <exec_depend>mbot_msgs</exec_depend>
+  <exec_depend>mbot_bringup</exec_depend>
+
+  <export>
+    <metapackage/>
+  </export>
+</package>

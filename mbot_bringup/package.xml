@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package>
+  <name>mbot_bringup</name>
+  <version>0.0.1</version>
+  <description>MBot bringup package</description>
+
+  <maintainer email="m.dittmann@varomo.de">Marco Dittmann</maintainer>
+
+  <license>MIT</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>roscpp</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>simpleble</build_depend>
+  <build_depend>mbot_msgs</build_depend>
+
+  <run_depend>roscpp</run_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>mbot_msgs</run_depend>
+</package>

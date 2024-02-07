@@ -1,0 +1,6 @@
+<launch>
+    <!-- Serial node -->
+    <arg name="_port" default="/dev/ttyS0"/>
+    <arg name="_baud" default="115200"/>
+    <node pkg="rosserial_python" type="serial_node.py" name="rosserial" args ="_port:=$(arg _port) _baud:=$(arg _baud)" output="screen"/>
+</launch>

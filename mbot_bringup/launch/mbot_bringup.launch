@@ -1,0 +1,8 @@
+<launch>
+  <!-- Parameter file -->
+  <rosparam file="$(find mbot_bringup)/param/mbot_parameters.yaml" />
+  <!-- mbot_bringup node -->
+  <node pkg="mbot_bringup" type="mbot_bringup" name="mbot_bringup" output="screen"/>
+  <!-- mbot_battery node for x728 Raspberry Pi UPS-->
+  <include file="$(find mbot_bringup)/launch/mbot_battery.launch"/>
+</launch>
