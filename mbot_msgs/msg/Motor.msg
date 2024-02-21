@@ -1,4 +1,4 @@
 #Header header
-int16 left
-int16 right
+int16 left      # MLeft motor command
+int16 right     # Right motor command
 

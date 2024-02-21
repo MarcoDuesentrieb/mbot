@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
 <package>
   <name>mbot_bringup</name>
-  <version>0.0.1</version>
-  <description>MBot bringup package</description>
+  <version>1.0.0</version>
+  <description>mBot bringup package</description>
 
+  <author email="m.dittmann@varomo.de">Marco Dittmann</author>
   <maintainer email="m.dittmann@varomo.de">Marco Dittmann</maintainer>
-
-  <license>MIT</license>
+  <license>BSD</license>
 
   <buildtool_depend>catkin</buildtool_depend>
 

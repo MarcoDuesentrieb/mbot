@@ -10,7 +10,6 @@
 #include <ros/ros.h>
 #include <std_msgs/Float32.h>
 #include <mbot_msgs/EMG.h>
-#include <mbot_msgs/Motor.h>
 
 
 void reverseBytes(std::string &s)
@@ -41,11 +40,9 @@ int main(int argc, char** argv)
 
     // ROS publishers
     ros::Publisher emg_pub = nh.advertise<mbot_msgs::EMG>("/mbot/emg", 10);
-    ros::Publisher motor_pub = nh.advertise<mbot_msgs::Motor>("/mbot/motor", 10);
 
     // ROS messages
     mbot_msgs::EMG emg;
-    mbot_msgs::Motor motor;
 
     // Read rate parameter
     double rate;
@@ -153,7 +150,6 @@ int main(int argc, char** argv)
     });
 
 
-
     arduino.set_callback_on_disconnected([&connected, &uuids]()
     {
         connected = false;
@@ -171,9 +167,7 @@ int main(int argc, char** argv)
     {
         if(connected)
         {
-
-
-
+            // placeholder
         }
         else if(!adapter.scan_is_active() && !found)
         {
@@ -189,7 +183,6 @@ int main(int argc, char** argv)
             }
         }
 
-        // motor_pub.publish(motor);
         ros::spinOnce();
         loop_rate.sleep();
     }

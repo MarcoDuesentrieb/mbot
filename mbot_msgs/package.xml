@@ -1,9 +1,9 @@
 <package>
   <name>mbot_msgs</name>
-  <version>0.0.1</version>
+  <version>1.0.0</version>
   <description>
     <p>
-      Carecules custom message and service types.
+      mBot custom message types.
     </p> 
   </description>
   <author email="m.dittmann@varomo.de">Marco Dittmann</author>
