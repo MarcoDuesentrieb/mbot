@@ -18,10 +18,10 @@ This package is part of the *"EMG Robot"*-Project.
 catkin_make_isolated --pkg mbot --install -DCMAKE_INSTALL_PREFIX=/opt/ros/melodic
  ```
 
-3. Now you can run different nodes or launch different launch files, e.g. the demo application:
+3. Now you can run different nodes or launch different launch files, e.g. the mbot_bringup_node:
 
  ```bash
-roslaunch mbot_bringup mbot_demo.launch
+roslaunch mbot_bringup mbot_bringup.launch
  ```
 
 ## mbot_bringup

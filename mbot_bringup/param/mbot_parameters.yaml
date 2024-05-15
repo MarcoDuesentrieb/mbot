@@ -1,10 +1,9 @@
 rate: 25
-peripheral_address: "78:21:84:7B:35:AA"
+emg_sensor_address_01: "78:21:84:7B:35:AA"
+emg_sensor_address_02: "78:21:84:7B:37:CE"
+emg_sensor_address_03: "08:B6:1F:82:2C:6A"
+emg_sensor_address_04: "08:B6:1F:82:16:46"
 ultrasonic_safety_distance: 0.19
-motor_throttle_left: 0.061
-motor_throttle_right: 0.00
-motor_throttle_all: 0.00
-boost_upper_interval: false 
 emg_timeout: 0.1
 v_emg01_min: 0.40
 v_emg01_max: 1.50

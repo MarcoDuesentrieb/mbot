@@ -63,18 +63,6 @@ This node is responsible for producing motor command outputs for the mBots' moto
 - `ultrasonic_safety_distance` (float, default: 0.19):  
   Safety distance (meters) of ultrasonic sensor, below which the motors stop moving regardless of motor command sent. 
 
--  `motor_throttle_left` (double):  
-  Factor to multiply with the left wheel motor command to compensate for unequal internal resistance of the mBots' motors. 
-
--  `motor_throttle_right` (double):  
-  Factor to multiply with the right wheel motor command to compensate for unequal internal resistance of the mBots' motors.  
-
-- `motor_throttle_all` (double):  
-  Factor to multiply with both wheels' motor command to throttle the maximum speed. 0.0: No throttle at all, 1.0: full throttle (motors won't move at all).  
-
-- `boost_upper_interval` (bool, default: false):  
-  Amplifies the received EMG signal for the upper half of the expected voltage interval.  
-
 - `emg_timeout` (double):  
   Timeout (seconds) after which the `mbot_controller` node sends a stop command for the motor as a safety measure, in case there is no current EMG data available.
 
@@ -90,9 +78,6 @@ This node is responsible for producing motor command outputs for the mBots' moto
 - `v_emg02_max` (float):  
   Sensor 2 maximum expected EMG voltage.  
 
-### demo_parameters.yaml
-
-This file contains the configuration for the simple demo application. For a detailed description of used parameters, see section [`mbot_parameters.yaml`](#mbot_parameters.yaml).
 
 ## Launch files
 
@@ -116,15 +101,6 @@ Launches the
 
 - `mbot_parameters` parameter file
 - `mbot_controller` node
-- `mbot_rosserial` launch file
-
-### mbot_demo.launch
-
-Launches the 
-
-- `demo_parameters` parameter file
-- `mbot_controller` node
-- `mbot_bringup` launch file
 - `mbot_rosserial` launch file
 
 ### mbot_rosserial.launch

@@ -4,9 +4,9 @@ project(mbot_msgs)
 find_package(catkin REQUIRED COMPONENTS message_generation std_msgs)
 
 add_message_files(DIRECTORY msg FILES
-		EMG.msg
-		Motor.msg
-                )
+    EMG.msg
+    Motor.msg
+)
 
 #add_service_files(DIRECTORY srv FILES
 #   Lights.srv
@@ -16,11 +16,5 @@ add_message_files(DIRECTORY msg FILES
 #  DIRECTORY action FILES
 #)
 
-generate_messages(DEPENDENCIES std_msgs
-#			       geometry_msgs
-#  			       actionlib_msgs
-#			       diagnostic_msgs
-#  			       nav_msgs
-#  			       move_base_msgs)
-)
+generate_messages(DEPENDENCIES std_msgs)
 catkin_package(CATKIN_DEPENDS std_msgs)
