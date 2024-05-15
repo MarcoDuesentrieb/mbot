@@ -8,6 +8,6 @@
 
     <!-- mbot_controller node -->
 	<rosparam file="$(find mbot_bringup)/param/demo_parameters.yaml" />
-    <node pkg="mbot_bringup" type="mbot_controller" name="mbot_controller" output="screen" />
+    <node pkg="mbot_bringup" type="mbot_demo" name="mbot_demo" output="screen" />
 
 </launch>

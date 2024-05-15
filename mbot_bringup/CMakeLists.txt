@@ -9,11 +9,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(Threads REQUIRED)
 find_package(simpleble REQUIRED CONFIG)
 find_package(catkin REQUIRED COMPONENTS
-        roscpp
-        roslib
-        std_msgs
-        sensor_msgs
-        mbot_msgs)
+    roscpp
+    roslib
+    std_msgs
+    sensor_msgs
+    mbot_msgs
+)
 
 
 ###################################
@@ -26,7 +27,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-          INCLUDE_DIRS inc
+          INCLUDE_DIRS include
         #  LIBRARIES beginner_tutorials
           CATKIN_DEPENDS roscpp rospy std_msgs sensor_msgs
         #  DEPENDS system_lib
@@ -43,14 +44,13 @@ include_directories(
 
 )
 
-
-
 add_executable(mbot_bringup src/mbot_bringup.cpp)
 add_executable(mbot_controller src/mbot_controller.cpp)
-
+add_executable(mbot_demo src/mbot_demo.cpp)
 
 target_link_libraries(mbot_bringup Threads::Threads simpleble::simpleble ${catkin_LIBRARIES})
-target_link_libraries(mbot_controller Threads::Threads ${catkin_LIBRARIES})
+target_link_libraries(mbot_controller ${catkin_LIBRARIES})
+target_link_libraries(mbot_demo ${catkin_LIBRARIES})
 
 
 
@@ -58,8 +58,11 @@ target_link_libraries(mbot_controller Threads::Threads ${catkin_LIBRARIES})
 # Install
 ################################################################################
 
-install(TARGETS mbot_bringup RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
-install(TARGETS mbot_controller RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+install(TARGETS mbot_bringup 
+                mbot_controller
+                mbot_demo
+                RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
