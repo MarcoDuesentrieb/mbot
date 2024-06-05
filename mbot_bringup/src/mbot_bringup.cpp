@@ -48,13 +48,6 @@ class MbotBringupNode
 public:
     MbotBringupNode()
     {
-        // Signal handler providing a graceful shutdown of the node
-        // signal(SIGINT, signalHandler);
-
-        // Setup Dynamic Reconfigure 
-        f = boost::bind(&MbotBringupNode::dynRecCallback, this, _1, _2);
-        server.setCallback(f);
-
         // List of MAC-Addresses of all available EMG sensors is stored in mbot_parameters.yaml
         while(true)
         {
@@ -71,6 +64,10 @@ public:
             }
             else break;
         }
+
+        // Setup Dynamic Reconfigure 
+        f = boost::bind(&MbotBringupNode::dynRecCallback, this, _1, _2);
+        server.setCallback(f);
 
         // The correct sensor number is retrieved from evaluating the hostname (last 2 characters)
         // E.g. hostname: mbot-0x --> sensor_param_name: "emg_sensor_address_0x"
@@ -99,7 +96,6 @@ public:
         
         // Start scanning for peripherals
         adapter.scan_start();
-        
     }
 
     ~MbotBringupNode()
@@ -114,7 +110,6 @@ public:
 
     void run()
     {
-        
         while (ros::ok())
         {
             ros::Rate loop_rate(rate);
@@ -128,8 +123,6 @@ public:
                     {
                         adapter.scan_start();
                     }
-                        
-                    //arduino.connect();
                 }
                 catch(std::exception& e)
                 {
@@ -165,11 +158,7 @@ private:
 
     void dynRecCallback(mbot_bringup::dynrecConfig &config, uint32_t level)
     {
-        if(!arduino.initialized())
-        {
-            ROS_WARN("dynRecCallback: Arduino not initialized.");
-            return;
-        } 
+        if(!adapter.initialized()) return;
 
         auto new_peripheral_address = sensorMap.at(config.emg_sensor_id);
 
@@ -177,7 +166,7 @@ private:
         {
             peripheral_address = new_peripheral_address;
             emg_sensor_id = config.emg_sensor_id;
-            ROS_INFO_STREAM("Changed EMG sensor ID to: " << config.emg_sensor_id << "(" << new_peripheral_address << ")");
+            ROS_INFO_STREAM("Changed EMG sensor ID to: " << config.emg_sensor_id << " (" << new_peripheral_address << ")");
             ros::param::set("emg_sensor_id", config.emg_sensor_id);
 
             // Stop any ongoing scan
@@ -186,7 +175,8 @@ private:
 
             // Disconnect if currently connected
             if (connected) {
-                arduino.disconnect();
+                if(arduino.initialized())
+                    arduino.disconnect();
                 connected = false;
                 uuids.clear();
                 found = false;
@@ -255,8 +245,6 @@ private:
 
     void setupBluetoothPeripheral()
     {
-
-
         // Get the list of peripherals found
         // std::vector<SimpleBLE::Peripheral> peripherals = adapter.scan_get_results();
 
@@ -282,7 +270,6 @@ private:
             {
                 ROS_WARN("No services and characteristics found!");
             }
-
 
             // Subscribe to the characteristic.
             arduino.notify(uuids[1].first, uuids[1].second, [this](SimpleBLE::ByteArray rx_data)
@@ -312,9 +299,7 @@ private:
             
         });
 
-
         // Establish a connection to the Arduino device
-        
         if(arduino.is_connectable())
         {
             ROS_INFO_STREAM("Connecting to EMG sensor " << emg_sensor_id << " (" << peripheral_address << ")");
@@ -332,14 +317,11 @@ private:
         {
             ROS_ERROR_STREAM("Peripheral " << peripheral_address << " is not connectable!");
         }
-            
     }
-
 };
 
 int main(int argc, char** argv)
 {
-    
     ros::init(argc, argv, "mbot_bringup_node");
     MbotBringupNode node;
     
@@ -352,6 +334,5 @@ int main(int argc, char** argv)
         ROS_ERROR_STREAM(e.what());
     }
     
-
     return 0;
 }
