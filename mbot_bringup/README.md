@@ -22,6 +22,11 @@ This node initiates a Bluetooth Low Energy (BLE) connection with the Arduino Nan
 - `/mbot/emg (mbot_msgs/EMG)`:  
   EMG voltage from both Sensor 1 and Sensor 2.
 
+#### Parameters
+
+- `/peripheral_connected` (bool):  
+  Indicates whether the BLE peripheral is connected to the Raspberry Pi or not.
+
 ### mbot_controller_node
 
 This node is responsible for producing motor command outputs for the mBots' motors. It monitors the `/mbot/emg` topic to gather EMG data from both sensors. Subsequently, it processes these signals to generate motor commands, which are then disseminated as `mbot_msgs/Motor` messages through the `/mbot/motor` topic. These messages are received by the mBots' mCore board, which is integrated via ROSserial, to control the motors' operation. The node utilizes the minimum and maximum EMG voltage parameters defined in the `mbot_parameters.yaml` file, converting the EMG readings from this defined range into motor commands that vary from -255 to 255. Here, -255 signifies full reverse motion, while 255 indicates full forward motion of the motor.
@@ -38,6 +43,17 @@ This node is responsible for producing motor command outputs for the mBots' moto
 
 - `/mbot/motor (mbot_msgs/Motor)`:  
   Motor commands (-255: full backward, 255: full forward) for mCore to drive the left and right wheel. 
+
+
+### emg_plotter
+
+This node subscribes to the `/mbot/emg` topic to collect EMG data from both sensors. It then displays this data graphically as a bar chart using Matplotlib. Additionally, it indicates whether the EMG sensor is connected by periodically retrieving the `/peripheral_connected` parameter, which is set by the `mbot_bringup_node`.
+
+#### Topics subscribed
+  
+- `/mbot/emg (mbot_msgs/EMG)`:  
+  EMG voltage from both Sensor 1 and Sensor 2.
+
 
 ## Parameter files
 
@@ -78,9 +94,6 @@ This node is responsible for producing motor command outputs for the mBots' moto
 - `v_emg02_max` (float):  
   Sensor 2 maximum expected EMG voltage.  
 
-### demo_parameters.yaml
-
-This file contains the configuration for the simple demo application. For a detailed description of used parameters, see section [`mbot_parameters.yaml`](#mbot_parameters.yaml).
 
 ## Launch files
 
@@ -104,15 +117,6 @@ Launches the
 
 - `mbot_parameters` parameter file
 - `mbot_controller` node
-- `mbot_rosserial` launch file
-
-### mbot_demo.launch
-
-Launches the 
-
-- `demo_parameters` parameter file
-- `mbot_controller` node
-- `mbot_bringup` launch file
 - `mbot_rosserial` launch file
 
 ### mbot_rosserial.launch
