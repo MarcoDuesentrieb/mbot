@@ -35,12 +35,13 @@ class EMGPlotter:
 
         # Initialize plot attributes
         self.fig, self.ax = plt.subplots()
+        self.ax.tick_params(axis='x', labelsize=12)  # Font size for x-axis tick labels
+        self.ax.tick_params(axis='y', labelsize=12)
         self.ax.set_ylim(0, 3.5)
         self.ax.set_ylabel('Voltage [V]', fontsize=16)
         self.ax.set_title('EMG Sensor Voltage', fontsize=20)
         self.title = self.ax.text(0.5, 0.95, "", bbox={'facecolor':'w', 'alpha':0.1, 'pad':5},
                 transform=self.ax.transAxes, ha="center")
-        # self.title = self.ax.set_title('EMG Sensor Voltage (disconnected)', fontsize=20)
         self.bars = self.ax.bar(['ch1', 'ch2'], [self.ch1_value, self.ch2_value], color=self.colors[:2])
 
         # Set grid color
@@ -52,9 +53,6 @@ class EMGPlotter:
         # Set plot window to fullscreen
         mng = plt.get_current_fig_manager()
         mng.full_screen_toggle()
-
-        # Create a timer to check the peripheral_connected parameter
-        # self.connected_timer = rospy.Timer(rospy.Duration(0.2), self.check_connected_status)
 
         plt.show()
 

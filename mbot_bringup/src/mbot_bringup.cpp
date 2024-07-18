@@ -116,22 +116,27 @@ public:
         while (ros::ok())
         {
             ros::Rate loop_rate(rate);
-            if(found && !arduino.is_connected() && !connecting)
+            if(arduino.initialized())
             {
-                ROS_INFO("Trying to reconnect ...");
-                try
+                if(!arduino.is_connected() && !connecting)
                 {
-                    connecting = true;
-                    if(!adapter.scan_is_active())
+                    ROS_INFO("Trying to reconnect ...");
+                    try
                     {
-                        adapter.scan_start();
+                        connecting = true;
+                        arduino.connect();
+                        // if(!adapter.scan_is_active())
+                        // {
+                        //     adapter.scan_start();
+                        // }
+                    }
+                    catch(std::exception& e)
+                    {
+                        // placeholder
                     }
                 }
-                catch(std::exception& e)
-                {
-                    // placeholder
-                }
             }
+
             
 
             ros::spinOnce();
@@ -273,6 +278,9 @@ private:
                 ROS_WARN("No services and characteristics were found!");
                 ROS_WARN("Trying to dis- and reconnect ...");
                 arduino.disconnect();
+                while (arduino.is_connected())
+                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                found = false;
                 return;
             }
 
