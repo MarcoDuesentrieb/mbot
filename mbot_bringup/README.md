@@ -22,6 +22,11 @@ This node initiates a Bluetooth Low Energy (BLE) connection with the Arduino Nan
 - `/mbot/emg (mbot_msgs/EMG)`:  
   EMG voltage from both Sensor 1 and Sensor 2.
 
+#### Parameters
+
+- `/peripheral_connected` (bool):  
+  Indicates whether the BLE peripheral is connected to the Raspberry Pi or not.
+
 ### mbot_controller_node
 
 This node is responsible for producing motor command outputs for the mBots' motors. It monitors the `/mbot/emg` topic to gather EMG data from both sensors. Subsequently, it processes these signals to generate motor commands, which are then disseminated as `mbot_msgs/Motor` messages through the `/mbot/motor` topic. These messages are received by the mBots' mCore board, which is integrated via ROSserial, to control the motors' operation. The node utilizes the minimum and maximum EMG voltage parameters defined in the `mbot_parameters.yaml` file, converting the EMG readings from this defined range into motor commands that vary from -255 to 255. Here, -255 signifies full reverse motion, while 255 indicates full forward motion of the motor.

@@ -48,6 +48,9 @@ class MbotBringupNode
 public:
     MbotBringupNode()
     {
+        // Indicate connection state as ROS parameter
+        ros::param::set("peripheral_connected", false);
+
         // List of MAC-Addresses of all available EMG sensors is stored in mbot_parameters.yaml
         while(true)
         {
@@ -113,22 +116,28 @@ public:
         while (ros::ok())
         {
             ros::Rate loop_rate(rate);
-            if(found && !arduino.is_connected() && !connecting)
+            if(arduino.initialized())
             {
-                ROS_INFO("Trying to reconnect ...");
-                try
+                if(!arduino.is_connected() && !connecting)
                 {
-                    connecting = true;
-                    if(!adapter.scan_is_active())
+                    ROS_INFO("Trying to reconnect ...");
+                    try
                     {
-                        adapter.scan_start();
+                        connecting = true;
+                        arduino.connect();
+                        // if(!adapter.scan_is_active())
+                        // {
+                        //     adapter.scan_start();
+                        // }
+                    }
+                    catch(std::exception& e)
+                    {
+                        // placeholder
                     }
                 }
-                catch(std::exception& e)
-                {
-                    // placeholder
-                }
             }
+
+            
 
             ros::spinOnce();
             loop_rate.sleep();
@@ -187,6 +196,7 @@ private:
         }
     }
 
+
     int setupBluetoothAdapter()
     {
         // Check if the systems bluetooth adapter is enabled
@@ -219,7 +229,7 @@ private:
         });
 
         // Set the callback to be called when the scan stops
-        adapter.set_callback_on_scan_stop([]()
+        adapter.set_callback_on_scan_stop([this]()
         {
             ROS_INFO("Scan stopped");
         });
@@ -255,21 +265,28 @@ private:
             connecting = false;
             ROS_INFO("Connected!");
 
+            // Set peripheral_connected ROS parameter to true on connection
+            ros::param::set("peripheral_connected", true);
+                
             // Store all service and characteristic uuids in a vector.
             for (auto service: arduino.services())
                 for (auto characteristic: service.characteristics())
                     uuids.push_back(std::make_pair(service.uuid(), characteristic.uuid()));
 
-            if(uuids.size()>0)
+            if(uuids.size() == 0)
             {
-                ROS_INFO("The following services and characteristics were found:");
-                for (size_t i = 0; i < uuids.size(); i++)
-                    ROS_INFO_STREAM("[" << i << "] " << uuids[i].first << " " << uuids[i].second);
+                ROS_WARN("No services and characteristics were found!");
+                ROS_WARN("Trying to dis- and reconnect ...");
+                arduino.disconnect();
+                while (arduino.is_connected())
+                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                found = false;
+                return;
             }
-            else
-            {
-                ROS_WARN("No services and characteristics found!");
-            }
+
+            ROS_INFO("The following services and characteristics were found:");
+            for (size_t i = 0; i < uuids.size(); i++)
+                ROS_INFO_STREAM("[" << i << "] " << uuids[i].first << " " << uuids[i].second);
 
             // Subscribe to the characteristic.
             arduino.notify(uuids[1].first, uuids[1].second, [this](SimpleBLE::ByteArray rx_data)
@@ -295,6 +312,7 @@ private:
         {
             connected = false;
             uuids.clear();
+            ros::param::set("peripheral_connected", false);
             ROS_WARN_STREAM("Peripheral disconnected.");
             
         });
@@ -302,9 +320,13 @@ private:
         // Establish a connection to the Arduino device
         if(arduino.is_connectable())
         {
+            ROS_INFO_STREAM("The peripheral has the following characteristics: " << arduino.services().size());
+
             ROS_INFO_STREAM("Connecting to EMG sensor " << emg_sensor_id << " (" << peripheral_address << ")");
             connecting = true;
-            try{
+            try
+            {
+
                 arduino.connect();
             }
             catch(std::exception& e)
