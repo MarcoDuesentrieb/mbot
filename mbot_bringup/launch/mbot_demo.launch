@@ -10,4 +10,7 @@
 	<rosparam file="$(find mbot_bringup)/param/demo_parameters.yaml" />
     <node pkg="mbot_bringup" type="mbot_demo" name="mbot_demo" output="screen" />
 
+	<!-- EMG plotter node -->
+	<node pkg ="mbot_bringup" type="emg_plotter.py" name="emg_plotter" output="screen" />	
+
 </launch>

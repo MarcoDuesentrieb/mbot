@@ -52,7 +52,6 @@ public:
             motor_pub.publish(motor_msg);
             ros::spinOnce();
             loop_rate.sleep();
-            ROS_INFO("Controller node running");
         }
     }
 private:

@@ -77,4 +77,5 @@ install(DIRECTORY param launch
 
 catkin_install_python(PROGRAMS
         scripts/mbot_battery.py
+		scripts/emg_plotter.py
         DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
