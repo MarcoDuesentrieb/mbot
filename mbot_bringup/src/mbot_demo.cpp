@@ -12,7 +12,8 @@
 #include <mbot_msgs/EMG.h>
 
 
-float map(float x, float in_min, float in_max, float out_min, float out_max) {
+template <typename T, typename U>
+U map(T x, T in_min, T in_max, U out_min, U out_max) {
     if(in_max == in_min) return (out_min + out_max) / 2.0;
     else return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
@@ -27,7 +28,9 @@ public:
 
         // get ROS parameters
         nh.param<float>("ultrasonic_safety_distance", ultrasonic_safety_distance, 0.10);
+        nh.param<float>("ultrasonic_recovery_distance", ultrasonic_recovery_distance, 0.10);
         nh.param<double>("rate", rate, 20.0); // Default rate: 10 Hz
+
         // get emg related parameters
         nh.param<double>("emg_timeout", emg_timeout, 0.2);
         nh.param<float>("v_emg01_min", emg01_min, 0.0);
@@ -64,6 +67,7 @@ private:
     double rate = 20.0;
     double emg_timeout;
     float ultrasonic_safety_distance;
+    float ultrasonic_recovery_distance;
     float ultrasonic_distance = 0.f;
     float emg01 = 0.f;
     float emg02 = 0.f;
@@ -74,26 +78,44 @@ private:
     {
         if((ros::Time::now() - last_emg_update).toSec() < emg_timeout)
         {
-            // Constrain emg between min and max
-            emg01 = std::clamp(emg01, emg01_min, emg01_max);
-            emg02 = std::clamp(emg02, emg02_min, emg02_max);
+            int cmd_l, cmd_r;
 
-            // Normalize 
-            float l = map(emg01, emg01_min, emg01_max, 0.0, 1.0);
-            float r = map(emg02, emg02_min, emg02_max, 0.0, 1.0);
-
-            // Calculate left and right motor speeds based on translational and rotational speed
-            int cmd_l = static_cast<int>(round(l * 255));
-            int cmd_r = static_cast<int>(round(r * 255));
-
+            // Look for obstacles
+            static bool obstacle_present = false;
             if(ultrasonic_distance < ultrasonic_safety_distance)
+                obstacle_present = true;
+            
+            if(obstacle_present)
             {
-                // only allow moving backwards since there is an obstacle in front of the robot
-                if(cmd_l > 0 || cmd_r > 0)
-                {
-                    cmd_l = 0;
-                    cmd_r = 0;
-                }
+                // Set the robot back to gain space to the obstacle
+                cmd_l = -100;
+                cmd_r = -100;
+
+                // Ensure that the robot gets enough space
+                if(ultrasonic_distance > ultrasonic_safety_distance + ultrasonic_recovery_distance)
+                    obstacle_present = false;
+            }
+            else
+            {
+                // Constrain emg between min and max
+                emg01 = std::clamp(emg01, emg01_min, emg01_max);
+                emg02 = std::clamp(emg02, emg02_min, emg02_max);
+
+                // Normalize 
+                float l = map(emg01, emg01_min, emg01_max, 0.0, 1.0);
+                float r = map(emg02, emg02_min, emg02_max, 0.0, 1.0);
+
+                // Calculate left and right motor speeds based on translational and rotational speed
+                cmd_l = static_cast<int>(round(l * 255));
+                cmd_r = static_cast<int>(round(r * 255));
+
+                // Reduce rotational velocity if one wheel moves significantly faster
+                const int diff_threshold = 140;
+                const int diff = cmd_l - cmd_r;
+                if(diff > diff_threshold)
+                    cmd_l = cmd_r + diff_threshold;
+                else if(diff < -diff_threshold)
+                    cmd_r = cmd_l + diff_threshold;
             }
 
             motor_msg.left = cmd_l;
@@ -120,9 +142,6 @@ private:
         last_emg_update = ros::Time::now();
     }
 };
-
-
-
 
 
 int main(int argc, char** argv)

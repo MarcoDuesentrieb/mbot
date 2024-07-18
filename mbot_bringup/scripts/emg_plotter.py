@@ -4,7 +4,6 @@ import rospy
 from mbot_msgs.msg import EMG
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
-from threading import Lock
 
 
 class EMGPlotter:
@@ -14,7 +13,6 @@ class EMGPlotter:
 
         self.ch1_value = 0.0
         self.ch2_value = 0.0
-        self.lock = Lock()
 
          # Set the plot style
         plt.style.use("dark_background")
@@ -61,30 +59,27 @@ class EMGPlotter:
         plt.show()
 
     def emg_callback(self, msg):
-        with self.lock:
-            self.ch1_value = msg.ch1
-            self.ch2_value = msg.ch2       
+        self.ch1_value = msg.ch1
+        self.ch2_value = msg.ch2       
 
     def init(self):
-        with self.lock:
-            for bar in self.bars:
-                bar.set_height(0)
+        for bar in self.bars:
+            bar.set_height(0)
         return self.bars
 
     def animate(self, i):
-        with self.lock:
-            self.bars[0].set_height(self.ch1_value)
-            self.bars[1].set_height(self.ch2_value)
-            param_name = '/peripheral_connected'
-            if rospy.has_param(param_name):
-                connected = rospy.get_param(param_name)
-                title = 'connected' if connected else 'disconnected'
-                self.title.set_text(title)
+        self.bars[0].set_height(self.ch1_value)
+        self.bars[1].set_height(self.ch2_value)
+        param_name = '/peripheral_connected'
+        if rospy.has_param(param_name):
+            connected = rospy.get_param(param_name)
+            title = 'connected' if connected else 'disconnected'
+            self.title.set_text(title)
         return self.bars + (self.title,)
-
 
     def spin(self):
         rospy.spin()  # Keep the node running
+
 
 if __name__ == '__main__':
     plotter = EMGPlotter()
