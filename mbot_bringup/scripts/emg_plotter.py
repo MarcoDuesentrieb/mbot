@@ -4,6 +4,7 @@ import rospy
 from mbot_msgs.msg import EMG
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+from PyQt5 import QtCore
 
 
 class EMGPlotter:
@@ -35,6 +36,8 @@ class EMGPlotter:
 
         # Initialize plot attributes
         self.fig, self.ax = plt.subplots()
+        self.fig.canvas.mpl_connect('motion_notify_event', 
+self.hide_cursor)
         self.ax.tick_params(axis='x', labelsize=12)  # Font size for x-axis tick labels
         self.ax.tick_params(axis='y', labelsize=12)
         self.ax.set_ylim(0, 3.5)
@@ -55,6 +58,10 @@ class EMGPlotter:
         mng.full_screen_toggle()
 
         plt.show()
+
+    def hide_cursor(self, event):
+        self.fig.canvas.setCursor(QtCore.Qt.BlankCursor)
+
 
     def emg_callback(self, msg):
         self.ch1_value = msg.ch1
